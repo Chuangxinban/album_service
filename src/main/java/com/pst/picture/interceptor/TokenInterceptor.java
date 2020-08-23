@@ -41,6 +41,7 @@ public class TokenInterceptor implements HandlerInterceptor {
         //验证token
         Map<String, Claim> verify = JwtUtil.verify(token);
         String userId = verify.get("userId").asString();
+        // todo 判断userId是否是数字
         String cacheToken = TokenCacheUtil.get(userId);
         System.out.println("token:"+token);
         System.out.println("cacheToken:"+cacheToken);

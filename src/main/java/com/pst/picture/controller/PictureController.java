@@ -44,7 +44,7 @@ public class PictureController {
         Assert.notEmpty(pictures, "上传图片不能为空");
         Assert.notNull(albumId, "相册id不能为空");
 
-        String userId = (String) request.getAttribute("userId");
+        Long userId = (Long) request.getAttribute("userId");
         if (null != userId){
             pictureService.uploadPicture(pictures, albumId, userId);
         }else {

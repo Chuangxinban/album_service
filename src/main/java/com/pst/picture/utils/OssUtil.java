@@ -59,7 +59,7 @@ public class OssUtil {
      * @param userId 用户id(用来确保用户路径)
      * @return 返回图片原图路径
      */
-    public static String uploadPicture(MultipartFile picture, String userId) {
+    public static String uploadPicture(MultipartFile picture, Long userId) {
         init();
         String url = null;
         String pictureName = picture.getOriginalFilename();
@@ -99,8 +99,8 @@ public class OssUtil {
      * @param pictureName 图片真实名字
      * @return 返回时间_图片名格式的url
      */
-    private static String generatePath(String userId, String pictureName) {
-        StringBuilder pathName = new StringBuilder(userId);
+    private static String generatePath(Long userId, String pictureName) {
+        StringBuilder pathName = new StringBuilder(String.valueOf(userId));
         String now = DateUtil.format(new Date(), DatePattern.PURE_DATETIME_PATTERN);
         pathName.append("/")
                 .append(now)

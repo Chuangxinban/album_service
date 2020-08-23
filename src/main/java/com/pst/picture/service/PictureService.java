@@ -30,7 +30,7 @@ public interface PictureService {
      * @param albumId 相册id
      * @param userId 用户id
      */
-    void uploadPicture(MultipartFile[] pictures, Long albumId, String userId);
+    void uploadPicture(MultipartFile[] pictures, Long albumId, Long userId);
 
     /**
      * 移动图片

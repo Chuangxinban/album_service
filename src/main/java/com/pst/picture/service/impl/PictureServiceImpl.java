@@ -49,7 +49,7 @@ public class PictureServiceImpl implements PictureService {
 
     @Override
     @Transactional(rollbackFor = {RuntimeException.class})
-    public void uploadPicture(MultipartFile[] pictures, Long albumId,String userId) {
+    public void uploadPicture(MultipartFile[] pictures, Long albumId,Long userId) {
         Picture pictureEntity = new Picture();
         pictureEntity.setAlbumId(albumId);
         for (MultipartFile picture:pictures) {
