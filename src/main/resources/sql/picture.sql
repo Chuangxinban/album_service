@@ -22,7 +22,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `album`;
 CREATE TABLE `album`  (
-  `id` bigint(19) NOT NULL COMMENT '相册id',
+  `id` bigint(19) NOT NULL COMMENT '相册id' ,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '相册名',
   `modify_time` datetime(0) NULL DEFAULT NULL COMMENT '修改时间',
   `type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '相册类型',

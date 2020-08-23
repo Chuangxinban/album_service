@@ -9,9 +9,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/picture?serverTimezone=GMT%2B8
+    url: jdbc:mysql://localhost:3306/picture?serverTimezone=GMT&characterEncoding=utf8&useSSL=false
     username: root
-    password: root
+    password: 112512
     type: com.alibaba.druid.pool.DruidDataSource
 
 mybatis-plus:
