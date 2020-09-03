@@ -64,6 +64,12 @@ public class EhCacheConfig {
                 .with(CacheManagerBuilder.persistence("/temp"))
                 .withCache("defaultCache",cacheConfiguration)
                 .withCache("token",cacheConfiguration)
+                .withCache("verifyCode", CacheConfigurationBuilder
+                        .newCacheConfigurationBuilder(String.class,String.class,build)
+                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(
+                                Duration.of(30, ChronoUnit.MINUTES)
+                        ))
+                        .build())
                 .build(true);
 
     }
@@ -74,6 +80,11 @@ public class EhCacheConfig {
     @Bean("tokenCache")
     public Cache<String,String> tokenCache(){
         return cacheManager.getCache("token",String.class,String.class);
+    }
+
+    @Bean("verifyCode")
+    public Cache<String,String> verifyCode(){
+        return cacheManager.getCache("verifyCode",String.class,String.class);
     }
 
 }

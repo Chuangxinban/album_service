@@ -34,5 +34,16 @@ public interface AlbumService {
      */
     void createNormalAlbum(String name, Long userId);
 
+    /**
+     * 删除相册
+     * @param albumId 相册ID
+     */
+    void deleteNormalAlbum(Long albumId);
 
+    /**
+     * 修改相册名
+     * @param albumId
+     * @param newName
+     */
+    void updateNormalAlbum(Long albumId, String newName);
 }

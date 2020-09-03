@@ -7,6 +7,12 @@ spring:
       max-file-size: 20MB
       max-request-size: 300MB
 
+  mail:
+    host: smtp.qq.com
+    username: 2728662673@qq.com
+    password: zqjvzunyatshddbi
+    default-encoding: UTF-8
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/picture?serverTimezone=GMT&characterEncoding=utf8&useSSL=false

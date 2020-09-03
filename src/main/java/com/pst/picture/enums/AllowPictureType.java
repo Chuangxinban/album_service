@@ -9,7 +9,12 @@ import com.pst.picture.exception.PictureException;
  */
 public enum AllowPictureType {
 
-    PNG("png"),JPG("jpg"),GIF("gif");
+    //png格式
+    PNG("png"),
+    //jpg格式
+    JPG("jpg"),
+    //gif格式
+    GIF("gif");
 
     private final String type;
 

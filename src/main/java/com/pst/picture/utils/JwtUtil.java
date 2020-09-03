@@ -50,8 +50,8 @@ public class JwtUtil {
         return jwt.getClaims();
     }
 
-    public static String signUser(String userId){
-        return sign("userId",userId);
+    public static String signUser(Long userId){
+        return sign("userId", String.valueOf(userId));
     }
 
 

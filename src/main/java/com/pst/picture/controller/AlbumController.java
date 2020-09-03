@@ -1,7 +1,6 @@
 package com.pst.picture.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.pst.picture.annotation.PassToken;
 import com.pst.picture.entity.Album;
 import com.pst.picture.entity.vo.Response;
 import com.pst.picture.exception.UserGetException;
@@ -31,8 +30,8 @@ public class AlbumController {
     @PostMapping
     public Response pictures(@RequestParam(defaultValue = "1") Integer pageNum, @RequestParam(defaultValue = "1") Integer pageSize, HttpServletRequest request) {
 
-        Long userId = (Long) request.getAttribute("userId");
-        if (null!= userId){
+        Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
+        if (null != userId){
             IPage<Album> list = albumService.listAlbum(pageNum, pageSize, userId);
             return Response.builder().result("ok").msg("获取图片列表成功").data(list).build();
         }else{
@@ -45,12 +44,38 @@ public class AlbumController {
     public Response createAlbum(String name, HttpServletRequest request){
         Assert.notNull(name,"相册名不能为空");
 
-        Long userId = (Long) request.getAttribute("userId");
+        Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
         if (null != userId){
             albumService.createNormalAlbum(name,userId);
         }else {
             throw new UserGetException("获取用户id失败");
         }
         return Response.builder().result("ok").msg("创建相册成功").build();
+    }
+
+    @PostMapping("delete")
+    public Response deleteAlbum(Long albumId, HttpServletRequest request){
+        Assert.notNull(albumId,"相册id不能为空");
+
+        Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
+        if (null != userId){
+            albumService.deleteNormalAlbum(albumId);
+        }else {
+            throw new UserGetException("获取用户id失败");
+        }
+        return Response.builder().result("ok").msg("删除相册成功").build();
+    }
+
+    @PostMapping("update")
+    public Response updateAlbum(Long albumId, String newName, HttpServletRequest request){
+        Assert.notNull(albumId,"相册id不能为空");
+
+        Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
+        if (null != userId){
+            albumService.updateNormalAlbum(albumId, newName);
+        }else {
+            throw new UserGetException("获取用户id失败");
+        }
+        return Response.builder().result("ok").msg("修改相册名成功").build();
     }
 }

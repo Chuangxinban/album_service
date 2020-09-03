@@ -4,10 +4,12 @@ import com.auth0.jwt.interfaces.Claim;
 import com.pst.picture.annotation.PassToken;
 import com.pst.picture.exception.AuthenticationException;
 import com.pst.picture.utils.JwtUtil;
-import com.pst.picture.utils.TokenCacheUtil;
+import org.ehcache.Cache;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
@@ -18,9 +20,13 @@ import java.util.Map;
  * @author RETURN
  * @date 2020/8/13 22:26
  */
+@Component
 public class TokenInterceptor implements HandlerInterceptor {
 
     private static final String TOKEN_NAME = "token";
+
+    @Resource(name = "tokenCache")
+    private Cache<String, String> tokenCache;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -42,7 +48,7 @@ public class TokenInterceptor implements HandlerInterceptor {
         Map<String, Claim> verify = JwtUtil.verify(token);
         String userId = verify.get("userId").asString();
         // todo 判断userId是否是数字
-        String cacheToken = TokenCacheUtil.get(userId);
+        String cacheToken = tokenCache.get(userId);
         System.out.println("token:"+token);
         System.out.println("cacheToken:"+cacheToken);
         if (!token.equals(cacheToken)){
