@@ -78,6 +78,7 @@ public class AlbumServiceImpl implements AlbumService {
                 album.setModifyTime(localDateTime);
                 album.setType("recycled");
                 albumMapper.updateById(album);
+                return;
             }else {
                 throw new AlbumDeleteException("删除相册失败");
             }
