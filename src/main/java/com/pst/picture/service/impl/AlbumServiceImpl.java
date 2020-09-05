@@ -109,10 +109,7 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     public Boolean selectAlbum(Long albumId){
-        if (albumMapper.selectById(albumId) != null){
-            return true;
-        }
-            return false;
+        return albumMapper.selectById(albumId) != null;
     }
 
     @Override
@@ -123,13 +120,11 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     public void createNormalAlbum(String name, Long userId) {
-
         createAlbum(name,userId,"default",true);
     }
 
     @Override
     public void deleteNormalAlbum(Long albumId) {
-
         deleteAlbum(albumId);
     }
 

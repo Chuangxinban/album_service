@@ -112,7 +112,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public JSONObject emailVerifyCodeLogin(String email, String verifyCode) {
         String matchVerifyCode = verifyCodeCache.get(email);
-        System.out.println(matchVerifyCode);
         if (verifyCode.equals(matchVerifyCode)) {
             if (selectEmail(email)) {
                 QueryWrapper<User> query = new QueryWrapper<>();

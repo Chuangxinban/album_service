@@ -1,5 +1,6 @@
 package com.pst.picture.controller;
 
+import cn.hutool.json.JSONObject;
 import com.pst.picture.annotation.PassToken;
 import com.pst.picture.entity.vo.Response;
 import com.pst.picture.exception.UserGetException;
@@ -59,7 +60,6 @@ public class UserController {
     }
 
     @PostMapping("changePwd")
-    @PassToken
     public Response changePwd(String email, String password, String verifyCode, HttpServletRequest request) {
         Assert.notNull(email, "用户邮箱不能为空");
 
@@ -77,4 +77,50 @@ public class UserController {
 
         return Response.builder().result("ok").msg("修改密码成功").build();
     }
+
+    @PostMapping("verifyCode")
+    @PassToken
+    public Response testSendTextMail(String email) {
+
+        Integer v = (int) ((Math.random() * 9 + 1) * 100000);
+        String verifyCode = String.valueOf(v);
+        verifyCodeCache.put(email, verifyCode);
+        System.out.println(verifyCode);
+        userService.sendTextMailService(email, "您的验证码", verifyCode);
+
+        return Response.builder().result("ok").msg("验证码发送成功").build();
+
+    }
+
+    @PostMapping("loginEmail")
+    @PassToken
+    public Response loginEmail(String email, String verifyCode) {
+        Assert.notNull(email, "用户邮箱不能为空");
+
+        String matchVerifyCode = verifyCodeCache.get(email);
+        if (matchVerifyCode == null) {
+            throw new VerifyCodeException("验证码错误");
+        }
+        if (!matchVerifyCode.equals(verifyCode)) {
+            throw new VerifyCodeException("验证码错误");
+        }
+
+        JSONObject userDetail = userService.emailVerifyCodeLogin(email, verifyCode);
+        if (verifyCodeCache.containsKey(email)) {
+            verifyCodeCache.remove(email);
+        }
+        return Response.builder().result("ok").data(userDetail).msg("登录成功").build();
+    }
+
+    @PassToken
+    @PostMapping("loginPwd")
+    public Response loginPwd(String email, String password) {
+        Assert.notNull(email, "用户邮箱不能为空");
+
+        userService.loginPwd(email, password);
+        JSONObject userDetail = userService.loginPwd(email, password);
+        return Response.builder().result("ok").data(userDetail).msg("登录成功").build();
+    }
+
+
 }

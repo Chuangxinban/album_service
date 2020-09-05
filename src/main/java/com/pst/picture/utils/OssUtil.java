@@ -2,7 +2,6 @@ package com.pst.picture.utils;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.net.url.UrlBuilder;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
@@ -17,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 
@@ -64,9 +62,10 @@ public class OssUtil {
         String url = null;
         String pictureName = picture.getOriginalFilename();
         try {
-            InputStream inputStream = picture.getInputStream();
             //校验图片
-            AllowPictureType.checkType(FileTypeUtil.getType(inputStream));
+            log.info("图片原名为:{}",pictureName);
+            log.info("图片格式为:{}",picture.getContentType());
+            AllowPictureType.checkType(picture.getContentType());
             //生成该用户上传的图片路径
             String pathWithName = generatePath(userId, pictureName);
             //上传到oss
@@ -77,6 +76,7 @@ public class OssUtil {
             //生成自定域名的url
             url = generateCnameUrl(pathWithName);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new UploadException("图片上传失败");
         } finally {
             destroy();
