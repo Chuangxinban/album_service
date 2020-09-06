@@ -12,7 +12,8 @@ import org.junit.runner.RunWith;
 @SuiteDisplayName("controller测试")
 @SelectClasses({
         UserTest.class,
-        AlbumTest.class
+        AlbumTest.class,
+        PictureTest.class
 })
 @RunWith(JUnitPlatform.class)
 public class PictureControllerTestSuite {
