@@ -119,4 +119,28 @@ public class AlbumTest extends BaseTest {
         );
         //todo 删除相册有bug(暂时修复)
     }
+
+    @DisplayName("更新相册测试")
+    @Test
+    void test4() throws Exception {
+        String userId = params.get("userId");
+        String token = tokenCache.get(userId);
+        String albumId = params.get("albumId");
+        ResultActions resultActions = mockMvc.perform(
+                post("/albums/update")
+                        .param("newName", "测试相册名修改")
+                        .param("albumId",albumId)
+                        .header("token",token)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+        ).andExpect(
+                status().isOk()
+        );
+        MvcResult mvcResult = resultActions.andReturn();
+        mvcResult.getResponse().setCharacterEncoding("UTF-8");
+        resultActions.andDo(
+                print()
+        );
+    }
+
 }
