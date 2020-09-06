@@ -72,12 +72,9 @@ public class AlbumServiceImpl implements AlbumService {
             queryWrapper.eq("album_id", albumId);
             Integer pictureCount = pictureMapper.selectCount(queryWrapper);
             if (pictureCount == 0){
-                LocalDateTime localDateTime = LocalDateTime.now();
                 Album album = new Album();
                 album.setId(albumId);
-                album.setModifyTime(localDateTime);
-                album.setType("recycled");
-                albumMapper.updateById(album);
+                albumMapper.deleteById(album);
                 return;
             }else {
                 throw new AlbumDeleteException("删除相册失败");
