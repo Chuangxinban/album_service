@@ -74,7 +74,7 @@ public class UserTest extends BaseTest {
         ResultActions resultActions = mockMvc.perform(
                 post("/user/loginPwd")
                         .param("email", "543851436@qq.com")
-                        .param("password", "ph123")
+                        .param("password", "123456")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .accept(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(

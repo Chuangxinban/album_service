@@ -3,7 +3,7 @@ package com.pst.picture.controller;
 import com.pst.picture.annotation.PassToken;
 import com.pst.picture.entity.vo.AuthUserVO;
 import com.pst.picture.entity.vo.Response;
-import com.pst.picture.exception.UserGetException;
+import com.pst.picture.exception.UserException;
 import com.pst.picture.exception.VerifyCodeException;
 import com.pst.picture.service.UserService;
 import org.ehcache.Cache;
@@ -40,7 +40,7 @@ public class UserController {
         if (null != userId) {
             userService.uploadAvatar(picture, userId);
         } else {
-            throw new UserGetException("获取用户id失败");
+            throw new UserException("获取用户id失败");
         }
         return Response.builder().result("ok").msg("修改头像成功").build();
     }
@@ -54,7 +54,7 @@ public class UserController {
         if (null != userId) {
             userService.updateNickname(nickname, userId);
         } else {
-            throw new UserGetException("获取用户id失败");
+            throw new UserException("获取用户id失败");
         }
         return Response.builder().result("ok").msg("修改昵称成功").build();
     }
@@ -72,7 +72,7 @@ public class UserController {
         if (null != userId) {
             userService.updatePassword(userId, password);
         } else {
-            throw new UserGetException("获取用户id失败");
+            throw new UserException("获取用户id失败");
         }
 
         return Response.builder().result("ok").msg("修改密码成功").build();

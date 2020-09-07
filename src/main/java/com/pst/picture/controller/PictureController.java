@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pst.picture.entity.Picture;
 import com.pst.picture.entity.vo.PictureDetailVO;
 import com.pst.picture.entity.vo.Response;
-import com.pst.picture.exception.UserGetException;
+import com.pst.picture.exception.UserException;
 import com.pst.picture.service.PictureService;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,7 +48,7 @@ public class PictureController {
         if (null != userId){
             pictureService.uploadPicture(pictures, albumId, userId);
         }else {
-            throw new UserGetException("获取用户id失败");
+            throw new UserException("获取用户id失败");
         }
         return Response.builder().result("ok").msg("成功").build();
     }

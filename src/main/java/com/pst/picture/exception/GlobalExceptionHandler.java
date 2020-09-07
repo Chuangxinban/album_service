@@ -1,7 +1,9 @@
 package com.pst.picture.exception;
 
 import com.pst.picture.entity.vo.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
@@ -12,23 +14,33 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(PictureException.class)
-    public Response pictureExceptionHandle(Exception e){
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response runtimeExceptionHandle(Exception e){
         return Response.builder().result("failed").msg(e.getMessage()).build();
     }
 
-    @ExceptionHandler(UploadException.class)
-    public Response uploadExceptionHandle(Exception e){
-        return Response.builder().result("failed").msg(e.getMessage()).build();
-    }
-
-    @ExceptionHandler(UserGetException.class)
-    public Response userGetExceptionHandle(Exception e){
-        return Response.builder().result("failed").msg(e.getMessage()).build();
-    }
-
-    @ExceptionHandler(AuthenticationException.class)
-    public Response authExceptionHandle(AuthenticationException e){
-        return Response.builder().result("failed").msg(e.getMessage()).build();
-    }
+//    @ExceptionHandler(PictureException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public Response pictureExceptionHandle(Exception e){
+//        return Response.builder().result("failed").msg(e.getMessage()).build();
+//    }
+//
+//    @ExceptionHandler(UploadException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public Response uploadExceptionHandle(Exception e){
+//        return Response.builder().result("failed").msg(e.getMessage()).build();
+//    }
+//
+//    @ExceptionHandler(UserException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public Response userExceptionHandle(Exception e){
+//        return Response.builder().result("failed").msg(e.getMessage()).build();
+//    }
+//
+//    @ExceptionHandler(AuthenticationException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public Response authExceptionHandle(AuthenticationException e){
+//        return Response.builder().result("failed").msg(e.getMessage()).build();
+//    }
 }

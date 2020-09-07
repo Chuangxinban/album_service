@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pst.picture.dao.UserMapper;
 import com.pst.picture.entity.User;
 import com.pst.picture.entity.vo.AuthUserVO;
-import com.pst.picture.exception.EmailException;
-import com.pst.picture.exception.LoginException;
-import com.pst.picture.exception.UploadException;
-import com.pst.picture.exception.VerifyCodeException;
+import com.pst.picture.exception.*;
 import com.pst.picture.service.UserService;
 import com.pst.picture.utils.JwtUtil;
 import com.pst.picture.utils.OssUtil;
@@ -88,10 +85,10 @@ public class UserServiceImpl implements UserService {
             user.setPassword(password);
             int row = userMapper.updateById(user);
             if (row <= 0) {
-                throw new UploadException("密码修改错误");
+                throw new UserException("密码修改错误");
             }
         } else {
-            throw new UploadException("密码格式错误");
+            throw new UserException("密码格式错误");
         }
     }
 
