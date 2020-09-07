@@ -1,9 +1,9 @@
 package com.pst.picture.service.impl;
 
-import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pst.picture.dao.UserMapper;
 import com.pst.picture.entity.User;
+import com.pst.picture.entity.vo.AuthUserVO;
 import com.pst.picture.exception.EmailException;
 import com.pst.picture.exception.LoginException;
 import com.pst.picture.exception.UploadException;
@@ -17,6 +17,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -47,7 +48,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = {RuntimeException.class})
     public void uploadAvatar(MultipartFile picture, Long userId) {
         User user = new User();
-        log.info("头像{}正在上传...", picture.getOriginalFilename());
+        log.debug("头像{}正在上传...", picture.getOriginalFilename());
         String path = OssUtil.uploadPicture(picture, userId);
         String pathMini = OssUtil.getMiniPath(path);
         user.setId(userId);
@@ -103,31 +104,39 @@ public class UserServiceImpl implements UserService {
         message.setText(content);
         try {
             sender.send(message);
-            System.out.println("验证码发送成功");
+            log.debug("验证码发送成功{}:",message);
         } catch (Exception e) {
             throw new VerifyCodeException("验证码发送失败");
         }
     }
 
     @Override
-    public JSONObject emailVerifyCodeLogin(String email, String verifyCode) {
+    public AuthUserVO emailVerifyCodeLogin(String email, String verifyCode) {
         String matchVerifyCode = verifyCodeCache.get(email);
         if (verifyCode.equals(matchVerifyCode)) {
             if (selectEmail(email)) {
-                QueryWrapper<User> query = new QueryWrapper<>();
-                query.eq("email", email);
-                User user = userMapper.selectOne(query);
-                JSONObject jsonObject = new JSONObject(user);
-                System.out.println(jsonObject);
-                String token = JwtUtil.signUser(user.getId());
-                jsonObject.putOpt("token", token);
-                tokenCache.put(String.valueOf(user.getId()), token);
-                return jsonObject;
+                return getAuthUser(email);
             }
             emailRegister(email);
             return emailVerifyCodeLogin(email, matchVerifyCode);
         }
         throw new VerifyCodeException("验证码错误");
+    }
+
+    private AuthUserVO getAuthUser(String email) {
+        QueryWrapper<User> query = new QueryWrapper<>();
+        query.eq("email", email);
+        User user = userMapper.selectOne(query);
+        AuthUserVO authUser = new AuthUserVO().convertFrom(user);
+        String token = tokenCache.get(String.valueOf(user.getId()));
+        if (null == token) {
+            token = JwtUtil.signUser(user.getId());
+        }
+        Assert.notNull(authUser,"返回的Auth不能为空");
+
+        authUser.setToken(token);
+        tokenCache.put(String.valueOf(user.getId()), token);
+        return authUser;
     }
 
     @Override
@@ -148,24 +157,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public JSONObject loginPwd(String email, String password) {
+    public AuthUserVO loginPwd(String email, String password) {
 
         String pwd = selectPwd(email);
         if (!password.equals(pwd)) {
             throw new LoginException("密码不匹配");
         }
-        QueryWrapper<User> query = new QueryWrapper<>();
-        query.eq("email", email);
-        User user = userMapper.selectOne(query);
-        JSONObject jsonObject = new JSONObject(user);
-        System.out.println(jsonObject);
-        String token = tokenCache.get(String.valueOf(user.getId()));
-        if (null == token) {
-            token = JwtUtil.signUser(user.getId());
-        }
-        jsonObject.putOpt("token", token);
-        tokenCache.put(String.valueOf(user.getId()), token);
-        return jsonObject;
+        return getAuthUser(email);
     }
 
     @Override

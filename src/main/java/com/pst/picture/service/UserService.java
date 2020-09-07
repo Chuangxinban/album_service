@@ -1,6 +1,6 @@
 package com.pst.picture.service;
 
-import cn.hutool.json.JSONObject;
+import com.pst.picture.entity.vo.AuthUserVO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -45,7 +45,7 @@ public interface UserService {
      * @param email 用户邮箱
      * @return
      */
-    JSONObject emailVerifyCodeLogin(String email, String verifyCode);
+    AuthUserVO emailVerifyCodeLogin(String email, String verifyCode);
 
     /**
      * 验证邮箱是否已注册
@@ -65,7 +65,7 @@ public interface UserService {
      * @param password
      * @return
      */
-    JSONObject loginPwd(String email, String password);
+    AuthUserVO loginPwd(String email, String password);
 
     /**
      * 根据email查询password

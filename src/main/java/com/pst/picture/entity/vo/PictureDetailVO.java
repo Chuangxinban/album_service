@@ -1,8 +1,9 @@
 package com.pst.picture.entity.vo;
 
+import com.pst.picture.converter.OutPutConverter;
+import com.pst.picture.entity.Picture;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Date;
  * @date 2020/8/16 21:16
  */
 @Data
-public class PictureDetail implements Serializable {
+public class PictureDetailVO implements OutPutConverter<PictureDetailVO, Picture> {
     private Long id;
     private String path;
     private Date uploadTime;

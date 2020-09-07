@@ -9,7 +9,7 @@ import com.pst.picture.dao.AlbumMapper;
 import com.pst.picture.dao.PictureMapper;
 import com.pst.picture.entity.Album;
 import com.pst.picture.entity.Picture;
-import com.pst.picture.entity.vo.PictureDetail;
+import com.pst.picture.entity.vo.PictureDetailVO;
 import com.pst.picture.exception.PictureException;
 import com.pst.picture.exception.UploadException;
 import com.pst.picture.service.PictureService;
@@ -86,11 +86,11 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
-    public PictureDetail getPicture(Long pictureId) {
+    public PictureDetailVO getPicture(Long pictureId) {
         Picture picture = pictureMapper.selectById(pictureId);
         String path = picture.getPath();
         JSONObject info = OssUtil.getInfo(path);
-        PictureDetail detail = JSONUtil.toBean(info, PictureDetail.class);
+        PictureDetailVO detail = JSONUtil.toBean(info, PictureDetailVO.class);
         detail.setDescribe(picture.getDescribe());
         detail.setUploadTime(picture.getUploadTime());
         detail.setPath(path);

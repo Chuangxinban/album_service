@@ -3,7 +3,7 @@ package com.pst.picture.controller;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pst.picture.entity.Picture;
-import com.pst.picture.entity.vo.PictureDetail;
+import com.pst.picture.entity.vo.PictureDetailVO;
 import com.pst.picture.entity.vo.Response;
 import com.pst.picture.exception.UserGetException;
 import com.pst.picture.service.PictureService;
@@ -67,7 +67,7 @@ public class PictureController {
     public Response detailed(Long pictureId) {
         Assert.notNull(pictureId, "图片id不能为空");
 
-        PictureDetail picture = pictureService.getPicture(pictureId);
+        PictureDetailVO picture = pictureService.getPicture(pictureId);
         return Response.builder().result("ok").msg("成功").data(picture).build();
     }
 

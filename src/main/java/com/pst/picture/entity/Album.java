@@ -6,7 +6,6 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * (Album)实体类
@@ -16,7 +15,6 @@ import java.util.Date;
  */
 @Data
 public class Album implements Serializable {
-    private static final long serialVersionUID = 184808527455604831L;
     /**
      * 相册id
      */

@@ -2,7 +2,7 @@ package com.pst.picture.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pst.picture.entity.Picture;
-import com.pst.picture.entity.vo.PictureDetail;
+import com.pst.picture.entity.vo.PictureDetailVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -44,7 +44,7 @@ public interface PictureService {
      * @param pictureId 图片id
      * @return 图片详情
      */
-    PictureDetail getPicture(Long pictureId);
+    PictureDetailVO getPicture(Long pictureId);
 
     /**
      * 更新图片的描述

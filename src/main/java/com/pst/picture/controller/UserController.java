@@ -1,7 +1,7 @@
 package com.pst.picture.controller;
 
-import cn.hutool.json.JSONObject;
 import com.pst.picture.annotation.PassToken;
+import com.pst.picture.entity.vo.AuthUserVO;
 import com.pst.picture.entity.vo.Response;
 import com.pst.picture.exception.UserGetException;
 import com.pst.picture.exception.VerifyCodeException;
@@ -105,7 +105,7 @@ public class UserController {
             throw new VerifyCodeException("验证码错误");
         }
 
-        JSONObject userDetail = userService.emailVerifyCodeLogin(email, verifyCode);
+        AuthUserVO userDetail = userService.emailVerifyCodeLogin(email, verifyCode);
         if (verifyCodeCache.containsKey(email)) {
             verifyCodeCache.remove(email);
         }
@@ -118,7 +118,7 @@ public class UserController {
         Assert.notNull(email, "用户邮箱不能为空");
 
         userService.loginPwd(email, password);
-        JSONObject userDetail = userService.loginPwd(email, password);
+        AuthUserVO userDetail = userService.loginPwd(email, password);
         return Response.builder().result("ok").data(userDetail).msg("登录成功").build();
     }
 
