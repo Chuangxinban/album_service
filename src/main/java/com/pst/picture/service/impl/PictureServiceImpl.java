@@ -91,10 +91,7 @@ public class PictureServiceImpl implements PictureService {
         String path = picture.getPath();
         JSONObject info = OssUtil.getInfo(path);
         PictureDetailVO detail = JSONUtil.toBean(info, PictureDetailVO.class);
-        detail.setDescribe(picture.getDescribe());
-        detail.setUploadTime(picture.getUploadTime());
-        detail.setPath(path);
-        detail.setId(picture.getId());
+        detail = detail.convertFrom(picture);
         log.info("图片详情信息包括:{}",detail);
         return detail;
     }
