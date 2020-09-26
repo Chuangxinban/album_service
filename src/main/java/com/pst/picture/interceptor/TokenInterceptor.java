@@ -4,8 +4,10 @@ import com.auth0.jwt.interfaces.Claim;
 import com.pst.picture.annotation.PassToken;
 import com.pst.picture.exception.AuthenticationException;
 import com.pst.picture.utils.JwtUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.ehcache.Cache;
 import org.springframework.stereotype.Component;
+import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,6 +23,7 @@ import java.util.Map;
  * @date 2020/8/13 22:26
  */
 @Component
+@Slf4j
 public class TokenInterceptor implements HandlerInterceptor {
 
     private static final String TOKEN_NAME = "token";
@@ -30,6 +33,9 @@ public class TokenInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        if (CorsUtils.isPreFlightRequest(request)) {
+            return true;
+        }
         //如果该url没有进入controller的方法
         if (!(handler instanceof HandlerMethod)){
             return true;

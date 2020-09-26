@@ -20,30 +20,20 @@ public interface AlbumService {
      */
     IPage<Album> listAlbum(Integer pageNum, Integer pageSize, Long userId);
 
-
-    /**
-     * 创建默认相册和回收站
-     * @param userId 用户ID
-     */
-    void createDefaultAndRecycledAlbum(Long userId);
-
-    /**
-     * 创建相册
-     * @param name 相册名字
-     * @param userId 用户ID
-     */
-    void createNormalAlbum(String name, Long userId);
+    void createAlbum(String name, Long userId, String type, boolean judge);
 
     /**
      * 删除相册
      * @param albumId 相册ID
      */
-    void deleteNormalAlbum(Long albumId);
+    void deleteAlbum(Long albumId);
 
     /**
      * 修改相册名
      * @param albumId
      * @param newName
      */
-    void updateNormalAlbum(Long albumId, String newName);
+    void updateAlbumName(Long albumId,Long userId, String newName);
+
+    void createNormalAlbum(String name, Long userId);
 }

@@ -38,26 +38,26 @@ public interface UserService {
      * @param subject 邮件主题
      * @param content 邮件内容
      */
-    void sendTextMailService(String email,String subject,String content);
+    void sendVerifyCode(String email,String subject,String content);
 
     /**
      * 邮箱验证码登录
      * @param email 用户邮箱
      * @return
      */
-    AuthUserVO emailVerifyCodeLogin(String email, String verifyCode);
+    AuthUserVO loginEmail(String email, String verifyCode);
 
     /**
      * 验证邮箱是否已注册
      * @param email
      */
-    Boolean selectEmail(String email);
+    Boolean checkEmail(String email);
 
     /**
      * 注册邮箱
      * @param email
      */
-    void emailRegister(String email);
+    void userRegister(String email);
 
     /**
      * 邮箱密码登录
@@ -68,8 +68,9 @@ public interface UserService {
     AuthUserVO loginPwd(String email, String password);
 
     /**
-     * 根据email查询password
-     * @param email
+     * @param email sadasd
+     * @return
      */
-    String selectPwd(String email);
+    String checkPassword(String email);
+
 }

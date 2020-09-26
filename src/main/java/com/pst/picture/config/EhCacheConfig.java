@@ -49,7 +49,7 @@ public class EhCacheConfig {
         cacheConfiguration = CacheConfigurationBuilder
                 .newCacheConfigurationBuilder(String.class,String.class,build)
                 .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(
-                        Duration.of(60, ChronoUnit.SECONDS)
+                        Duration.of(60, ChronoUnit.MINUTES)
                 ))
                 .build();
 

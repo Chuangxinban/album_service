@@ -11,13 +11,13 @@ import com.pst.picture.exception.AlbumCreateException;
 import com.pst.picture.exception.AlbumDeleteException;
 import com.pst.picture.exception.AlbumUpdateException;
 import com.pst.picture.service.AlbumService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * (Album)表服务实现类
@@ -25,6 +25,7 @@ import java.util.Map;
  * @author RETURN
  * @since 2020-08-13 22:00:59
  */
+@Slf4j
 @Service
 public class AlbumServiceImpl implements AlbumService {
     @Resource
@@ -36,16 +37,21 @@ public class AlbumServiceImpl implements AlbumService {
     public IPage<Album> listAlbum(Integer pageNum, Integer pageSize, Long userId) {
         QueryWrapper<Album> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id",userId);
+        List<Album> albums = albumMapper.selectList(queryWrapper).stream().filter(album -> !"默认相册".equals(album.getName())).collect(Collectors.toList());
+        log.debug("相册:{}",albums);
+        if (albums.isEmpty()){
+            createDefaultAndRecycledAlbum(userId);
+        }
         IPage<Album> page = new Page<>(pageNum,pageSize);
         page = albumMapper.selectPage(page,queryWrapper);
         return page;
     }
 
-
-    private void createAlbum(String name,Long userId,String type,boolean judge) {
-
+    @Override
+    public void createAlbum(String name, Long userId, String type, boolean judge) {
+        log.debug("给用户{} 创建相册:{} --> {}",userId,name,type);
         QueryWrapper<Album> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("name", name).lt("user_id",userId).last("limit 1");
+        queryWrapper.eq("name", name).lt("user_id",userId);
         Integer integer = albumMapper.selectCount(queryWrapper);
         if (integer!=1){
             LocalDateTime nowTime = LocalDateTime.now();
@@ -65,8 +71,10 @@ public class AlbumServiceImpl implements AlbumService {
         }
     }
 
+
+    @Override
     public void deleteAlbum(Long albumId){
-        Boolean judge = selectAlbum(albumId);
+        boolean judge = albumMapper.selectById(albumId) != null;
         if (judge){
             QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("album_id", albumId);
@@ -83,19 +91,19 @@ public class AlbumServiceImpl implements AlbumService {
             throw new AlbumDeleteException("删除相册失败");
     }
 
-    public void updateAlbumName(Long albumId, String newName){
-        Boolean judge = selectAlbum(albumId);
+    @Override
+    public void updateAlbumName(Long albumId,Long userId, String newName){
+        boolean judge = albumMapper.selectById(albumId) != null;
         if (judge){
-            Map<String, Object> columnMap = new HashMap<>();
-            columnMap.put("name", newName);
-            System.out.println(newName);
-            List<Album> albums = albumMapper.selectByMap(columnMap);
-            if (albums.size() == 0){
+            QueryWrapper<Album> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("name", newName);
+            queryWrapper.eq("user_id",userId);
+            List<Album> albums = albumMapper.selectList(queryWrapper);
+            if (albums.isEmpty()){
                 LocalDateTime localDateTime = LocalDateTime.now();
                 Album album = new Album();
                 album.setId(albumId);
                 album.setName(newName);
-                System.out.println(album.getName());
                 album.setModifyTime(localDateTime);
                 albumMapper.updateById(album);
             }else {
@@ -106,29 +114,14 @@ public class AlbumServiceImpl implements AlbumService {
         }
     }
 
-    public Boolean selectAlbum(Long albumId){
-        return albumMapper.selectById(albumId) != null;
-    }
-
-    @Override
-    public void createDefaultAndRecycledAlbum(Long userId) {
-        createAlbum("默认相册",userId,"default",false);
-        createAlbum("回收站",userId,"recycled",false);
-    }
-
     @Override
     public void createNormalAlbum(String name, Long userId) {
         createAlbum(name,userId,"default",true);
     }
 
-    @Override
-    public void deleteNormalAlbum(Long albumId) {
-        deleteAlbum(albumId);
-    }
-
-    @Override
-    public void updateNormalAlbum(Long albumId, String newName) {
-        updateAlbumName(albumId, newName);
+    public void createDefaultAndRecycledAlbum(Long userId) {
+        createAlbum("默认相册",userId,"default",false);
+        createAlbum("回收站",userId,"recycled",false);
     }
 
 }

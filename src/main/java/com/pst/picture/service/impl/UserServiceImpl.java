@@ -1,5 +1,6 @@
 package com.pst.picture.service.impl;
 
+import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pst.picture.dao.UserMapper;
 import com.pst.picture.entity.User;
@@ -14,13 +15,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * (User)表服务实现类
@@ -40,6 +37,8 @@ public class UserServiceImpl implements UserService {
     @Resource
     private JavaMailSender sender;
 
+    private static final String NICKNAME_REG = "^[\u4E00-\u9FA5A-Za-z\\s+-]{2,64}$";
+
 
     @Override
     @Transactional(rollbackFor = {RuntimeException.class})
@@ -54,15 +53,14 @@ public class UserServiceImpl implements UserService {
         if (row <= 0) {
             throw new UploadException("头像修改失败");
         }
-
+        log.debug("头像上传成功");
     }
 
     @Override
     @Transactional(rollbackFor = {RuntimeException.class})
     public void updateNickname(String nickname, Long userId) {
-
-        String reg = "^[\u4E00-\u9FA5A-Za-z\\s+-]{2,64}$";
-        if (nickname.matches(reg)) {
+        log.debug("用户{}昵称修改为{}",userId,nickname);
+        if (nickname.matches(NICKNAME_REG)) {
             User user = new User();
             user.setId(userId);
             user.setNickname(nickname);
@@ -73,27 +71,26 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new UploadException("昵称格式错误");
         }
+        log.info("昵称修改成功");
     }
 
     @Override
     @Transactional(rollbackFor = {RuntimeException.class})
     public void updatePassword(Long userId, String password) {
-        String reg = ".{6,64}$";
-        if (password.matches(reg)) {
-            User user = new User();
-            user.setId(userId);
-            user.setPassword(password);
-            int row = userMapper.updateById(user);
-            if (row <= 0) {
-                throw new UserException("密码修改错误");
-            }
-        } else {
-            throw new UserException("密码格式错误");
+        log.debug("用户{}修改密码为{}",userId,password);
+        User user = new User();
+        user.setId(userId);
+        user.setPassword(DigestUtil.md5Hex(password));
+        int row = userMapper.updateById(user);
+        if (row <= 0) {
+            throw new UserException("密码修改错误");
         }
+        log.debug("用户密码修改成功");
     }
 
     @Override
-    public void sendTextMailService(String email, String subject, String content) {
+    public void sendVerifyCode(String email, String subject, String content) {
+        log.debug("开始发送验证码");
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("2728662673@qq.com");
         message.setTo(email);
@@ -108,16 +105,59 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AuthUserVO emailVerifyCodeLogin(String email, String verifyCode) {
+    public AuthUserVO loginEmail(String email, String verifyCode) {
+        log.debug("邮箱验证码登录开始");
         String matchVerifyCode = verifyCodeCache.get(email);
         if (verifyCode.equals(matchVerifyCode)) {
-            if (selectEmail(email)) {
+            if (checkEmail(email)) {
+                log.debug("邮箱验证码登录成功");
                 return getAuthUser(email);
             }
-            emailRegister(email);
-            return emailVerifyCodeLogin(email, matchVerifyCode);
+            log.debug("用户不存在,开始创建用户");
+            userRegister(email);
+            log.debug("用户创建成功");
+            return loginEmail(email, matchVerifyCode);
         }
         throw new VerifyCodeException("验证码错误");
+    }
+
+    @Override
+    public AuthUserVO loginPwd(String email, String password) {
+
+        String pwd = checkPassword(email);
+        if (!DigestUtil.md5Hex(password).equals(pwd)) {
+            throw new LoginException("密码不匹配");
+        }
+        return getAuthUser(email);
+    }
+
+    @Override
+    public void userRegister(String email) {
+        User user = new User();
+        user.setEmail(email);
+        user.setNickname("匿名用户");
+        userMapper.insert(user);
+    }
+
+    @Override
+    public Boolean checkEmail(String email) {
+        QueryWrapper<User> query = new QueryWrapper<>();
+        query.eq("email", email);
+        Integer count = userMapper.selectCount(query);
+        return count != 0;
+    }
+
+    @Override
+    public String checkPassword(String email) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email",email);
+        User user = userMapper.selectOne(queryWrapper);
+        if (null != user) {
+            log.info("密码登录的用户:{}",user);
+            return user.getPassword();
+        } else {
+            throw new EmailException("该邮箱未注册");
+        }
     }
 
     private AuthUserVO getAuthUser(String email) {
@@ -129,51 +169,8 @@ public class UserServiceImpl implements UserService {
         if (null == token) {
             token = JwtUtil.signUser(user.getId());
         }
-        Assert.notNull(authUser,"返回的Auth不能为空");
-
         authUser.setToken(token);
         tokenCache.put(String.valueOf(user.getId()), token);
         return authUser;
-    }
-
-    @Override
-    public Boolean selectEmail(String email) {
-        QueryWrapper<User> query = new QueryWrapper<>();
-        query.eq("email", email);
-        Integer count = userMapper.selectCount(query);
-        return count != 0;
-    }
-
-    @Override
-    public void emailRegister(String email) {
-        User user = new User();
-        user.setEmail(email);
-        user.setNickname("匿名用户");
-
-        userMapper.insert(user);
-    }
-
-    @Override
-    public AuthUserVO loginPwd(String email, String password) {
-
-        String pwd = selectPwd(email);
-        if (!password.equals(pwd)) {
-            throw new LoginException("密码不匹配");
-        }
-        return getAuthUser(email);
-    }
-
-    @Override
-    public String selectPwd(String email) {
-        Map<String, Object> columnMap = new HashMap<>(16);
-        columnMap.put("email", email);
-        System.out.println(email);
-        List<User> users = userMapper.selectByMap(columnMap);
-        if (users.size() != 0) {
-            System.out.println(users.get(0).getPassword());
-            return users.get(0).getPassword();
-        } else {
-            throw new EmailException("该邮箱未注册");
-        }
     }
 }

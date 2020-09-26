@@ -6,6 +6,7 @@ import com.pst.picture.entity.vo.Response;
 import com.pst.picture.exception.UserException;
 import com.pst.picture.exception.VerifyCodeException;
 import com.pst.picture.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.ehcache.Cache;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
  * @since 2020-08-13 22:01:00
  */
 @RestController
+@Slf4j
 @RequestMapping("user")
 public class UserController {
 
@@ -33,7 +35,6 @@ public class UserController {
 
     @PostMapping("changeAvatar")
     public Response changeAvatar(MultipartFile picture, HttpServletRequest request) {
-
         Assert.notNull(picture, "上传图片不能为空");
 
         Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
@@ -47,7 +48,7 @@ public class UserController {
 
     @PostMapping("changeNickname")
     public Response changeNickname(String nickname, HttpServletRequest request) {
-
+        log.debug("新昵称:{}", nickname);
         Assert.notNull(nickname, "用户昵称不能为空");
 
         Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
@@ -61,6 +62,7 @@ public class UserController {
 
     @PostMapping("changePwd")
     public Response changePwd(String email, String password, String verifyCode, HttpServletRequest request) {
+        log.debug("邮箱:{},密码:{},验证码:{}", email, password, verifyCode);
         Assert.notNull(email, "用户邮箱不能为空");
 
         Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
@@ -81,12 +83,12 @@ public class UserController {
     @PostMapping("verifyCode")
     @PassToken
     public Response testSendTextMail(String email) {
-
+        log.debug("发送验证码 -> 邮箱:{}", email);
         Integer v = (int) ((Math.random() * 9 + 1) * 100000);
         String verifyCode = String.valueOf(v);
         verifyCodeCache.put(email, verifyCode);
         System.out.println(verifyCode);
-        userService.sendTextMailService(email, "您的验证码", verifyCode);
+        userService.sendVerifyCode(email, "您的验证码", verifyCode);
 
         return Response.builder().result("ok").msg("验证码发送成功").build();
 
@@ -95,6 +97,7 @@ public class UserController {
     @PostMapping("loginEmail")
     @PassToken
     public Response loginEmail(String email, String verifyCode) {
+        log.debug("邮箱:{},验证码:{}", email, verifyCode);
         Assert.notNull(email, "用户邮箱不能为空");
 
         String matchVerifyCode = verifyCodeCache.get(email);
@@ -105,7 +108,7 @@ public class UserController {
             throw new VerifyCodeException("验证码错误");
         }
 
-        AuthUserVO userDetail = userService.emailVerifyCodeLogin(email, verifyCode);
+        AuthUserVO userDetail = userService.loginEmail(email, verifyCode);
         if (verifyCodeCache.containsKey(email)) {
             verifyCodeCache.remove(email);
         }
@@ -115,8 +118,8 @@ public class UserController {
     @PassToken
     @PostMapping("loginPwd")
     public Response loginPwd(String email, String password) {
+        log.debug("邮箱:{},密码:{}", email, password);
         Assert.notNull(email, "用户邮箱不能为空");
-
         userService.loginPwd(email, password);
         AuthUserVO userDetail = userService.loginPwd(email, password);
         return Response.builder().result("ok").data(userDetail).msg("登录成功").build();
