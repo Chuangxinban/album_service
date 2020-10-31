@@ -2,6 +2,7 @@ package com.pst.picture.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.pst.picture.enums.AlbumType;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -31,7 +32,7 @@ public class Album implements Serializable {
     /**
      * 相册类型
      */
-    private String type;
+    private AlbumType type;
     /**
      * 用户id
      */

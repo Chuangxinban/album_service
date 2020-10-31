@@ -1,6 +1,7 @@
 package com.pst.picture.service;
 
 import com.pst.picture.entity.vo.AuthUserVO;
+import com.pst.picture.entity.vo.UserInfoVO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -73,4 +74,5 @@ public interface UserService {
      */
     String checkPassword(String email);
 
+    UserInfoVO getUserInfo(Long userId);
 }

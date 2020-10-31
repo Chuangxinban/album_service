@@ -37,7 +37,7 @@ public class PictureController {
     public Response pictures(@RequestParam(defaultValue = "1") Integer pageNum, @RequestParam(defaultValue = "20") Integer pageSize, Long albumId) {
         Assert.notNull(albumId, "相册id不能为空");
 
-        log.debug("正在获取相册:{} -->{}页 每页{}个",albumId,pageNum,pageSize);
+        log.info("正在获取相册:{} -->{}页 每页{}个",albumId,pageNum,pageSize);
         IPage<Picture> list = pictureService.listPicture(pageNum, pageSize, albumId);
         return Response.builder().result("ok").msg("成功").data(list).build();
     }
@@ -48,7 +48,7 @@ public class PictureController {
         Assert.notNull(albumId, "相册id不能为空");
 
         Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
-        log.debug("用户:{},上传图片:{}张 --> 相册id:{}",userId,pictures.length,albumId);
+        log.info("用户:{},上传图片:{}张 --> 相册id:{}",userId,pictures.length,albumId);
         if (null != userId){
             pictureService.uploadPicture(pictures, albumId, userId);
         }else {
@@ -62,7 +62,7 @@ public class PictureController {
         Assert.notNull(ids, "图片id列表不能为空");
         Assert.notNull(albumId, "相册id不能为空");
 
-        log.debug("移动图片id:{} --> 相册id:{}",ids,albumId);
+        log.info("移动图片id:{} --> 相册id:{}",ids,albumId);
         List<String> splitId = StrUtil.split(ids, ',');
         pictureService.movePicture(splitId, albumId);
         return Response.builder().result("ok").msg("成功").build();
@@ -72,7 +72,7 @@ public class PictureController {
     public Response detailed(Long pictureId) {
         Assert.notNull(pictureId, "图片id不能为空");
 
-        log.debug("获取图片{}的详情",pictureId);
+        log.info("获取图片{}的详情",pictureId);
         PictureDetailVO picture = pictureService.getPicture(pictureId);
         return Response.builder().result("ok").msg("成功").data(picture).build();
     }
@@ -81,7 +81,7 @@ public class PictureController {
     public Response descUpdate(@RequestParam("newDescription") String description, Long pictureId) {
         Assert.notNull(pictureId, "图片id不能为空");
 
-        log.debug("修改图片{}的描述为{}",pictureId,description);
+        log.info("修改图片{}的描述为{}",pictureId,description);
         pictureService.updatePictureDesc(description, pictureId);
         return Response.builder().result("ok").msg("成功").build();
     }

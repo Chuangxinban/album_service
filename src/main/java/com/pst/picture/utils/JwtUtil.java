@@ -6,8 +6,8 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.pst.picture.exception.AuthenticationException;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -17,14 +17,12 @@ import java.util.UUID;
  * @author RETURN
  * @date 2020/8/13 22:27
  */
+@Slf4j
 public class JwtUtil {
 
     private static final String SECRET = "secret";
-    public static final long EXP =15 * 60 * 1000;
 
     public static String sign(String claimName,String payLoad){
-        Date exp = new Date(System.currentTimeMillis() + EXP);
-        Date iat = new Date(System.currentTimeMillis());
         Algorithm algorithm = Algorithm.HMAC256(SECRET);
         Map<String,Object> header = new HashMap<>(2);
         header.put("alg","HS256");
@@ -32,8 +30,6 @@ public class JwtUtil {
         return JWT.create()
                 .withHeader(header)
                 .withJWTId(UUID.randomUUID().toString())
-                .withExpiresAt(exp)
-                .withIssuedAt(iat)
                 .withClaim(claimName,payLoad)
                 .sign(algorithm);
     }
@@ -42,6 +38,7 @@ public class JwtUtil {
         DecodedJWT jwt = null;
         Algorithm algorithm = Algorithm.HMAC256(SECRET);
         try {
+            log.debug("尝试验证token：{}",token);
             jwt = JWT.require(algorithm).build().verify(token);
         }catch (JWTVerificationException e){
             throw new AuthenticationException("token验证失败");

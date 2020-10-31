@@ -2,6 +2,7 @@ package com.pst.picture.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pst.picture.entity.Album;
+import com.pst.picture.enums.AlbumType;
 
 /**
  * (Album)表服务接口
@@ -20,7 +21,7 @@ public interface AlbumService {
      */
     IPage<Album> listAlbum(Integer pageNum, Integer pageSize, Long userId);
 
-    void createAlbum(String name, Long userId, String type, boolean judge);
+    void createAlbum(String name, Long userId, AlbumType type, boolean judge);
 
     /**
      * 删除相册

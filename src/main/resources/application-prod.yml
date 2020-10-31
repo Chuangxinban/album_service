@@ -8,10 +8,14 @@ spring:
       max-request-size: 300MB
 
   mail:
-    host: smtp.qq.com
-    username: 2728662673@qq.com
-    password: zqjvzunyatshddbi
-    default-encoding: UTF-8
+    username: 18398858464@163.com
+    password: ZTUDFDOLCYGOFZJF
+    host: smtp.163.com
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -27,3 +31,4 @@ mybatis-plus:
     map-underscore-to-camel-case: true
   global-config:
     banner: false
+  type-enums-package: com.pst.picture.enums

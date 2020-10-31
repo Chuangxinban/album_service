@@ -5,19 +5,23 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pst.picture.dao.UserMapper;
 import com.pst.picture.entity.User;
 import com.pst.picture.entity.vo.AuthUserVO;
+import com.pst.picture.entity.vo.UserInfoVO;
 import com.pst.picture.exception.*;
 import com.pst.picture.service.UserService;
 import com.pst.picture.utils.JwtUtil;
 import com.pst.picture.utils.OssUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.ehcache.Cache;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 /**
  * (User)表服务实现类
@@ -35,7 +39,9 @@ public class UserServiceImpl implements UserService {
     @Resource(name = "tokenCache")
     private Cache<String, String> tokenCache;
     @Resource
-    private JavaMailSender sender;
+    JavaMailSender mailSender;
+    @Value("${spring.mail.username}")
+    String username;
 
     private static final String NICKNAME_REG = "^[\u4E00-\u9FA5A-Za-z\\s+-]{2,64}$";
 
@@ -89,19 +95,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void sendVerifyCode(String email, String subject, String content) {
+    public void sendVerifyCode(String email, String subject, String verifyCode) {
         log.debug("开始发送验证码");
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("2728662673@qq.com");
-        message.setTo(email);
-        message.setSubject(subject);
-        message.setText(content);
+
+        MimeMessage message = mailSender.createMimeMessage();
+        String content = "<html><body><h1>您的验证码是"+verifyCode+"</h1></body></html>";
+
+        MimeMessageHelper messageHelper = null;
         try {
-            sender.send(message);
+            messageHelper = new MimeMessageHelper(message,true);
+            messageHelper.setFrom(username);
+            messageHelper.setTo(email);
+            messageHelper.setSubject("验证码");
+            messageHelper.setText(content,true);
+            mailSender.send(message);
             log.debug("验证码发送成功{}:",message);
-        } catch (Exception e) {
+        } catch (MessagingException e) {
             throw new VerifyCodeException("验证码发送失败");
         }
+
     }
 
     @Override
@@ -158,6 +170,15 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new EmailException("该邮箱未注册");
         }
+    }
+
+    @Override
+    public UserInfoVO getUserInfo(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (null != user){
+            return new UserInfoVO().convertFrom(user);
+        }
+        throw new UserException("获取用户信息失败");
     }
 
     private AuthUserVO getAuthUser(String email) {

@@ -3,6 +3,7 @@ package com.pst.picture.controller;
 import com.pst.picture.annotation.PassToken;
 import com.pst.picture.entity.vo.AuthUserVO;
 import com.pst.picture.entity.vo.Response;
+import com.pst.picture.entity.vo.UserInfoVO;
 import com.pst.picture.exception.UserException;
 import com.pst.picture.exception.VerifyCodeException;
 import com.pst.picture.service.UserService;
@@ -43,12 +44,14 @@ public class UserController {
         } else {
             throw new UserException("获取用户id失败");
         }
-        return Response.builder().result("ok").msg("修改头像成功").build();
+        UserInfoVO userInfoVO = userService.getUserInfo(userId);
+        log.info("返回的用户信息{}",userInfoVO);
+        return Response.builder().data(userInfoVO).result("ok").msg("修改头像成功").build();
     }
 
     @PostMapping("changeNickname")
     public Response changeNickname(String nickname, HttpServletRequest request) {
-        log.debug("新昵称:{}", nickname);
+        log.info("新昵称:{}", nickname);
         Assert.notNull(nickname, "用户昵称不能为空");
 
         Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
@@ -57,12 +60,13 @@ public class UserController {
         } else {
             throw new UserException("获取用户id失败");
         }
-        return Response.builder().result("ok").msg("修改昵称成功").build();
+        UserInfoVO userInfoVO = userService.getUserInfo(userId);
+        return Response.builder().data(userInfoVO).result("ok").msg("修改昵称成功").build();
     }
 
     @PostMapping("changePwd")
     public Response changePwd(String email, String password, String verifyCode, HttpServletRequest request) {
-        log.debug("邮箱:{},密码:{},验证码:{}", email, password, verifyCode);
+        log.info("邮箱:{},密码:{},验证码:{}", email, password, verifyCode);
         Assert.notNull(email, "用户邮箱不能为空");
 
         Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
@@ -83,11 +87,11 @@ public class UserController {
     @PostMapping("verifyCode")
     @PassToken
     public Response testSendTextMail(String email) {
-        log.debug("发送验证码 -> 邮箱:{}", email);
+        log.info("发送验证码 -> 邮箱:{}", email);
         Integer v = (int) ((Math.random() * 9 + 1) * 100000);
         String verifyCode = String.valueOf(v);
         verifyCodeCache.put(email, verifyCode);
-        System.out.println(verifyCode);
+        log.info("验证码 -> {}", verifyCode);
         userService.sendVerifyCode(email, "您的验证码", verifyCode);
 
         return Response.builder().result("ok").msg("验证码发送成功").build();
@@ -97,7 +101,7 @@ public class UserController {
     @PostMapping("loginEmail")
     @PassToken
     public Response loginEmail(String email, String verifyCode) {
-        log.debug("邮箱:{},验证码:{}", email, verifyCode);
+        log.info("邮箱:{},验证码:{}", email, verifyCode);
         Assert.notNull(email, "用户邮箱不能为空");
 
         String matchVerifyCode = verifyCodeCache.get(email);
@@ -118,7 +122,7 @@ public class UserController {
     @PassToken
     @PostMapping("loginPwd")
     public Response loginPwd(String email, String password) {
-        log.debug("邮箱:{},密码:{}", email, password);
+        log.info("邮箱:{},密码:{}", email, password);
         Assert.notNull(email, "用户邮箱不能为空");
         userService.loginPwd(email, password);
         AuthUserVO userDetail = userService.loginPwd(email, password);

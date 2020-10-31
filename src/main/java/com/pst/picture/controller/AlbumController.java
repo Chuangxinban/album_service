@@ -30,7 +30,7 @@ public class AlbumController {
     private AlbumService albumService;
 
     @PostMapping
-    public Response pictures(@RequestParam(defaultValue = "1") Integer pageNum, @RequestParam(defaultValue = "10") Integer pageSize, HttpServletRequest request) {
+    public Response albums(@RequestParam(defaultValue = "1") Integer pageNum, @RequestParam(defaultValue = "10") Integer pageSize, HttpServletRequest request) {
         Long userId = request.getAttribute("userId") == null ? null : Long.valueOf(request.getAttribute("userId").toString());
         log.info("查询用户:{},第{}页,每页{}个图片列表",userId,pageNum,pageSize);
         if (null != userId){

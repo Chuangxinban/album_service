@@ -7,6 +7,7 @@ import com.pst.picture.dao.AlbumMapper;
 import com.pst.picture.dao.PictureMapper;
 import com.pst.picture.entity.Album;
 import com.pst.picture.entity.Picture;
+import com.pst.picture.enums.AlbumType;
 import com.pst.picture.exception.AlbumCreateException;
 import com.pst.picture.exception.AlbumDeleteException;
 import com.pst.picture.exception.AlbumUpdateException;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * (Album)表服务实现类
@@ -36,24 +36,23 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public IPage<Album> listAlbum(Integer pageNum, Integer pageSize, Long userId) {
         QueryWrapper<Album> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id",userId);
-        List<Album> albums = albumMapper.selectList(queryWrapper).stream().filter(album -> !"默认相册".equals(album.getName())).collect(Collectors.toList());
-        log.debug("相册:{}",albums);
-        if (albums.isEmpty()){
-            createDefaultAndRecycledAlbum(userId);
-        }
-        IPage<Album> page = new Page<>(pageNum,pageSize);
-        page = albumMapper.selectPage(page,queryWrapper);
+        queryWrapper.eq("user_id", userId);
+        List<Album> albums = albumMapper.selectList(queryWrapper);
+        createDefaultAndRecycledAlbum(userId, albums);
+        log.debug("相册:{}", albums);
+
+        IPage<Album> page = new Page<>(pageNum, pageSize);
+        page = albumMapper.selectPage(page, queryWrapper);
         return page;
     }
 
     @Override
-    public void createAlbum(String name, Long userId, String type, boolean judge) {
-        log.debug("给用户{} 创建相册:{} --> {}",userId,name,type);
+    public void createAlbum(String name, Long userId, AlbumType type, boolean judge) {
+        log.debug("给用户{} 创建相册:{} --> {}", userId, name, type);
         QueryWrapper<Album> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("name", name).lt("user_id",userId);
+        queryWrapper.eq("name", name).lt("user_id", userId);
         Integer integer = albumMapper.selectCount(queryWrapper);
-        if (integer!=1){
+        if (integer != 1) {
             LocalDateTime nowTime = LocalDateTime.now();
             Album album = new Album();
             album.setName(name);
@@ -61,11 +60,11 @@ public class AlbumServiceImpl implements AlbumService {
             album.setType(type);
             album.setUserId(userId);
             int row = albumMapper.insert(album);
-            if (row<=0){
+            if (row <= 0) {
                 throw new AlbumCreateException("创建相册失败");
             }
-        }else {
-            if (judge){
+        } else {
+            if (judge) {
                 throw new AlbumCreateException("相册名重复");
             }
         }
@@ -73,55 +72,77 @@ public class AlbumServiceImpl implements AlbumService {
 
 
     @Override
-    public void deleteAlbum(Long albumId){
+    public void deleteAlbum(Long albumId) {
         boolean judge = albumMapper.selectById(albumId) != null;
-        if (judge){
+        if (judge) {
             QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("album_id", albumId);
             Integer pictureCount = pictureMapper.selectCount(queryWrapper);
-            if (pictureCount == 0){
+            if (pictureCount == 0) {
                 Album album = new Album();
                 album.setId(albumId);
                 albumMapper.deleteById(album);
                 return;
-            }else {
+            } else {
                 throw new AlbumDeleteException("删除相册失败");
             }
         }
-            throw new AlbumDeleteException("删除相册失败");
+        throw new AlbumDeleteException("删除相册失败");
     }
 
     @Override
-    public void updateAlbumName(Long albumId,Long userId, String newName){
+    public void updateAlbumName(Long albumId, Long userId, String newName) {
         boolean judge = albumMapper.selectById(albumId) != null;
-        if (judge){
+        if (judge) {
             QueryWrapper<Album> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("name", newName);
-            queryWrapper.eq("user_id",userId);
+            queryWrapper.eq("user_id", userId);
             List<Album> albums = albumMapper.selectList(queryWrapper);
-            if (albums.isEmpty()){
+            if (albums.isEmpty()) {
                 LocalDateTime localDateTime = LocalDateTime.now();
                 Album album = new Album();
                 album.setId(albumId);
                 album.setName(newName);
                 album.setModifyTime(localDateTime);
                 albumMapper.updateById(album);
-            }else {
+            } else {
                 throw new AlbumUpdateException("相册名已存在");
             }
-        }else {
+        } else {
             throw new AlbumUpdateException("相册不存在");
         }
     }
 
     @Override
     public void createNormalAlbum(String name, Long userId) {
-        createAlbum(name,userId,"default",true);
+        createAlbum(name, userId, AlbumType.DEFAULT, true);
     }
 
-    public void createDefaultAndRecycledAlbum(Long userId) {
-        createAlbum("默认相册",userId,"default",false);
-        createAlbum("回收站",userId,"recycled",false);
+    public void createDefaultAndRecycledAlbum(Long userId, List<Album> albums) {
+        int hasDefault = 0, hasRecycled = 0;
+        if (albums.isEmpty()) {
+            createAlbum("默认相册", userId, AlbumType.DEFAULT, false);
+            createAlbum("回收站", userId, AlbumType.RECYCLED, false);
+            return;
+        }
+        for (Album album : albums) {
+            switch (album.getType()) {
+                case DEFAULT:
+                    hasDefault++;break;
+                case RECYCLED:
+                    hasRecycled++;break;
+                default:
+                    break;
+            }
+        }
+
+        if (hasDefault < 1) {
+            createAlbum("默认相册", userId, AlbumType.DEFAULT, false);
+        }
+        if (hasRecycled < 1) {
+            createAlbum("回收站", userId, AlbumType.RECYCLED, false);
+        }
+
     }
 
 }

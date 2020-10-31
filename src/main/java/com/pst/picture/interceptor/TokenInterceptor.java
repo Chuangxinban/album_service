@@ -6,6 +6,7 @@ import com.pst.picture.exception.AuthenticationException;
 import com.pst.picture.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.ehcache.Cache;
+import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.method.HandlerMethod;
@@ -41,6 +42,10 @@ public class TokenInterceptor implements HandlerInterceptor {
             return true;
         }
         HandlerMethod handlerMethod = (HandlerMethod) handler;
+
+        if(handlerMethod.getBeanType() == BasicErrorController.class){
+            throw new RuntimeException("未知错误");
+        }
         //如果有不需要验证token的注解
         if (handlerMethod.hasMethodAnnotation(PassToken.class)){
             return true;
@@ -53,13 +58,11 @@ public class TokenInterceptor implements HandlerInterceptor {
         //验证token
         Map<String, Claim> verify = JwtUtil.verify(token);
         String userId = verify.get("userId").asString();
-        // todo 判断userId是否是数字
         String cacheToken = tokenCache.get(userId);
-        System.out.println("token:"+token);
-        System.out.println("cacheToken:"+cacheToken);
         if (!token.equals(cacheToken)){
             throw new AuthenticationException("token已失效,请重新登录");
         }
+        log.info("token验证通过");
         request.setAttribute("userId",userId);
         return true;
     }
